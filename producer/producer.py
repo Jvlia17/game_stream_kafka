@@ -1,15 +1,43 @@
 import random
+import uuid
 import time
 import json
 from datetime import datetime, timezone
 
-from kafka import KafkaProducer
+from confluent_kafka import Producer
+from aws_msk_iam_sasl_signer import MSKAuthTokenProvider
 
 
-producer = KafkaProducer(
-    bootstrap_servers="localhost:9092",
-    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+REGION = "ca-central-1"
+
+BOOTSTRAP_SERVERS = (
+    "b-1.gamestreammsk.91ihjh.c3.kafka.ca-central-1.amazonaws.com:9098,"
+    "b-2.gamestreammsk.91ihjh.c3.kafka.ca-central-1.amazonaws.com:9098"
 )
+
+
+def oauth_cb(_oauth_config):
+    token, expiry_ms = MSKAuthTokenProvider.generate_auth_token(REGION)
+    return token, expiry_ms / 1000
+
+
+producer = Producer({
+    "bootstrap.servers": BOOTSTRAP_SERVERS,
+    "security.protocol": "SASL_SSL",
+    "sasl.mechanism": "OAUTHBEARER",
+    "oauth_cb": oauth_cb,
+    "client.id": "gamestream-producer",
+})
+
+
+def delivery_report(error, message):
+    if error:
+        print(f"Delivery failed: {error}")
+    else:
+        print(
+            f"Delivered to {message.topic()} "
+            f"[partition {message.partition()}]"
+        )
 
 
 locations = [
@@ -107,14 +135,16 @@ def send_event(player_id, event_type, extra_data=None):
         extra_data
     )
 
-    producer.send(
+    producer.produce(
         "game-events",
-        event
+        value=json.dumps(event).encode("utf-8"),
+        callback=delivery_report,
     )
 
-    producer.flush()
+    # Process delivery callbacks without waiting for every message.
+    producer.poll(0)
 
-    print(f"Sent event: {event}")
+    print(f"Queued event: {event}")
 
 
 def find_pvp_opponent(player_id):
@@ -227,8 +257,11 @@ while True:
         )
 
         previous_level = players[loser_id]["level"]
+        level_protected = (
+            previous_level > 0 and random.random() < 0.10
+        )
 
-        if random.random() < 0.10:
+        if level_protected:
 
             new_level = previous_level
 
@@ -254,7 +287,8 @@ while True:
             {
                 "opponent_id": winner_id,
                 "previous_level": previous_level,
-                "new_level": new_level
+                "new_level": new_level,
+                "level_protected": level_protected
             }
         )
 
@@ -290,10 +324,11 @@ while True:
 
         send_event(
             player_id,
-            "cheat_level_up",
+            "level_up",
             {
                 "previous_level": previous_level,
-                "new_level": player["level"]
+                "new_level": player["level"],
+                "enemies_killed": player["enemies_killed"]
             }
         )
 
@@ -335,10 +370,11 @@ while True:
 
                 send_event(
                     player_id,
-                    "level_completed",
+                    "level_up",
                     {
                         "previous_level": previous_level,
-                        "new_level": player["level"]
+                        "new_level": player["level"],
+                        "enemies_killed": 2
                     }
                 )
 
@@ -349,6 +385,7 @@ while True:
 
         elif event == "item_collected":
 
+            loot_roll_id = str(uuid.uuid4())
             item = random.choice(items)
 
             player["items"] += 1
@@ -357,7 +394,9 @@ while True:
                 player_id,
                 "item_collected",
                 {
-                    "item": item
+                    "item": item,
+                    "loot_roll_id": loot_roll_id,
+                    "loot_index": 1
                 }
             )
 
@@ -371,7 +410,9 @@ while True:
                     player_id,
                     "item_collected",
                     {
-                        "item": second_item
+                        "item": second_item,
+                        "loot_roll_id": loot_roll_id,
+                        "loot_index": 2
                     }
                 )
 
