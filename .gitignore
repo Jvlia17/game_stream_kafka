@@ -1,0 +1,23 @@
+# Python virtual environments
+.venv/
+venv/
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local event data
+consumer/game-events.jsonl
+*.jsonl
+
+# AWS credentials and private keys
+.aws/
+*.pem
+
+# Terraform local files and state
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
