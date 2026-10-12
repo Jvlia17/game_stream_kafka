@@ -1,9 +1,8 @@
-# GameStream — Real-Time Event Streaming & Cheat Detection
+# GameStream — Event Streaming & Cheat Detection
 
 **Apache Kafka | Flink | Docker | Amazon MSK | Amazon EC2 | Amazon S3 | AWS Glue | AWS Lambda | Athena | Amazon SNS**
 
-A streaming data pipeline for near-real-time cheat detection and cost-efficient gameplay analytics.
-Very cool and AI-free.
+A streaming data pipeline for near-real-time cheat detection and gameplay analytics, built around a simulated RPG game.
 
 # Business Problem
 
@@ -40,7 +39,4 @@ For entertainment purposes and to keep our anti-cheat system busy, a few players
 - **Double item drop:** 5% chance of receiving two items from a single loot roll.
 
 # Implementation
-
-# Project Structure
-
-# How to Run the Pipeline
+IN PROGRESS
