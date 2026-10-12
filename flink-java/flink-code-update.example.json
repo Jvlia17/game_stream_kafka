@@ -1,0 +1,11 @@
+{
+  "ApplicationCodeConfigurationUpdate": {
+    "CodeContentUpdate": {
+      "S3ContentLocationUpdate": {
+        "BucketARNUpdate": "arn:aws:s3:::<S3_BUCKET_NAME>",
+        "FileKeyUpdate": "flink/gamestream-cheat-detector-1.0.0.jar"
+      }
+    },
+    "CodeContentTypeUpdate": "ZIPFILE"
+  }
+}

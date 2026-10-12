@@ -1,0 +1,32 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ConnectToGameStreamCluster",
+      "Effect": "Allow",
+      "Action": [
+        "kafka-cluster:Connect",
+        "kafka-cluster:DescribeCluster"
+      ],
+      "Resource": "arn:aws:kafka:<REGION>:<ACCOUNT_ID>:cluster/<CLUSTER_NAME>/<CLUSTER_UUID>"
+    },
+    {
+      "Sid": "ReadGameEvents",
+      "Effect": "Allow",
+      "Action": [
+        "kafka-cluster:DescribeTopic",
+        "kafka-cluster:ReadData"
+      ],
+      "Resource": "arn:aws:kafka:<REGION>:<ACCOUNT_ID>:topic/<CLUSTER_NAME>/<CLUSTER_UUID>/<TOPIC_NAME>"
+    },
+    {
+      "Sid": "UseGameStreamConsumerGroup",
+      "Effect": "Allow",
+      "Action": [
+        "kafka-cluster:DescribeGroup",
+        "kafka-cluster:AlterGroup"
+      ],
+      "Resource": "arn:aws:kafka:<REGION>:<ACCOUNT_ID>:group/<CLUSTER_NAME>/<CLUSTER_UUID>/<CONSUMER_GROUP>"
+    }
+  ]
+}
