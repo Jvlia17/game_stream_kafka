@@ -42,5 +42,30 @@ For entertainment purposes and to keep our anti-cheat system busy, a few players
 - **Level protection cheat:** 10% chance of keeping a level after losing a PvP fight.
 - **Double item drop:** 5% chance of receiving two items from a single loot roll.
 
-# Implementation
-IN PROGRESS
+# Results
+
+After configuring Flink to read from Kafka and send detection results to Lambda (and spending more time than expected on security groups and VPC endpoints), the first alerts started arriving in my Gmail inbox.
+
+<p align="center">
+  <img src="images/sns_1.png" alt="GameStream architecture diagram" width="500">
+</p>
+
+But did Flink correctly accuse this player of cheating? We can easily verify this in Athena using below query.
+
+```sql
+SELECT
+    player_id,
+    timestamp,
+    event_type,
+    level,
+    enemies_killed
+FROM gamestream_db.curated
+WHERE player_id = 'player_1001'
+  AND event_timestamp >= TIMESTAMP '2026-10-11 20:35:30'
+  AND event_timestamp < TIMESTAMP '2026-10-11 20:36:30'
+  AND event_type IN ('enemy_killed', 'level_up')
+ORDER BY event_timestamp;
+```
+
+The results below confirm the alert. As a reminder, a player must kill two enemies to advance to the next level. However, player_1001 advanced from level 2 to 3 and then from level 3 to 4 without killing any enemies. This confirms that the player was cheating.
+
