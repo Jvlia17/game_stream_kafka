@@ -13,7 +13,7 @@ A gaming company continuously streams gameplay logs and needs to **detect suspic
 To simulate and address this problem, I decided to split the pipeline into two separate flows: one for near-real-time cheat detection and another for batch processing and historical analytics.
 
 <p align="center">
-  <img src="images/diagram.png" alt="GameStream architecture diagram" width="400">
+  <img src="images/diagram.png" alt="Image" width="400">
 </p>
 
 As shown in the diagram, several AWS services were used:
@@ -47,7 +47,7 @@ For entertainment purposes and to keep our anti-cheat system busy, a few players
 After configuring Flink to read from Kafka and send detection results to Lambda (and spending more time than expected on security groups and VPC endpoints), the first alerts started arriving in my Gmail inbox.
 
 <p align="center">
-  <img src="images/sns_1.png" alt="GameStream architecture diagram" width="500">
+  <img src="images/sns_1.png" alt="Image" width="500">
 </p>
 
 But did Flink correctly accuse this player of cheating? We can easily verify this in Athena using below query.
@@ -67,5 +67,26 @@ WHERE player_id = 'player_1001'
 ORDER BY event_timestamp;
 ```
 
-The results below confirm the alert. As a reminder, a player must kill two enemies to advance to the next level. However, player_1001 advanced from level 2 to 3 and then from level 3 to 4 without killing any enemies. This confirms that the player was cheating.
+As a reminder, a player must kill two enemies to advance to the next level. The results confirm that player_1001 advanced from level 2 to 3 and then from level 3 to 4 without killing any enemies. This confirms that the player was cheating and deserves a ban.
 
+<p align="center">
+  <img src="images/player_cheating.png" alt="Image" width="1000">
+</p>
+
+Of course, Athena can be used for much more than just finding cheaters. For example, let's say the company wants to analyze item drop rates across different locations as of specific date. 
+
+The query results suggest that Castle is rather poor when it comes to item drops, while Cave seems to be overflowing with loot — which is quite ironic, if you ask me.
+
+<p align="center">
+  <img src="images/athena_2.png" alt="Image" width="600">
+</p>
+
+What was the most violent location? Where did players fight the most?
+
+As we can see, the Plains were covered in blood the most. This might be because there's nowhere to hide, making it easy for bow users to pick off their opponents. On the other hand, Castle, Desert, and Island remained peaceful, with no PvP fights at all. Maybe it's just hard to fight in the sand? 🏖️
+
+<p align="center">
+  <img src="images/athena_3.png" alt="Image" width="600">
+</p>
+
+To sum up, the project was a success, and I'm really happy with how it turned out. The entire architecture worked as intended, from streaming game events and detecting cheats in near real time to storing data and querying it in Athena. The project also leaves plenty of room for further analysis and experimentation.
